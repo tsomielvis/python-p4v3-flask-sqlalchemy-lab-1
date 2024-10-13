@@ -1,0 +1,6 @@
+[pytest]
+
+testpaths = server/testing
+python_files = *_test.py
+
+from server.app import app

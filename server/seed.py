@@ -1,20 +1,38 @@
-#!/usr/bin/env python3
-# server/seed.py
+from app import app, db
+from models import Earthquake
+import random
+from datetime import datetime, timedelta
 
-from app import app
-from models import db, Earthquake
+def seed_data():
+    print("Starting seeding process...")
+    
+    with app.app_context():
+        # Create tables if they don't exist
+        db.create_all()
+        
+        # Clear existing data
+        Earthquake.query.delete()
+        db.session.commit()
+        
+        # Generate random earthquake data
+        places = ["California", "Japan", "Chile", "Indonesia", "Nepal", "Mexico", "Italy", "New Zealand", "Turkey", "Iran"]
+        start_date = datetime(2000, 1, 1)
+        end_date = datetime.now()
 
-with app.app_context():
+        for _ in range(100):  # Create 100 random earthquakes
+            magnitude = round(random.uniform(4.0, 9.0), 1)
+            place = random.choice(places)
+            date = start_date + timedelta(days=random.randint(0, (end_date - start_date).days))
+            year = date.year
 
-    # Delete all rows in the "earthquakes" table
-    Earthquake.query.delete()
+            earthquake = Earthquake(magnitude=magnitude, place=place, year=year)
+            db.session.add(earthquake)
 
-    # Add several Earthquake instances to the "earthquakes" table
-    db.session.add(Earthquake(magnitude=9.5, location="Chile", year=1960))
-    db.session.add(Earthquake(magnitude=9.2, location="Alaska", year=1964))
-    db.session.add(Earthquake(magnitude=8.6, location="Alaska", year=1946))
-    db.session.add(Earthquake(magnitude=8.5, location="Banda Sea", year=1934))
-    db.session.add(Earthquake(magnitude=8.4, location="Chile", year=1922))
+        db.session.commit()
+        print("Successfully added 100 new earthquake records.")
 
-    # Commit the transaction
-    db.session.commit()
+    print("Seeding process completed.")
+
+if __name__ == '__main__':
+    seed_data()
+
